@@ -1,0 +1,242 @@
+openapi: "3.0.0"
+info:
+  title: API de Tareas
+  version: "1.0.0"
+  description: API para la gestión de tareas.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: tarea
+    description: Endpoints para la gestión de tareas.
+paths:
+  /tareas:
+    get:
+      tags:
+        - tarea
+      summary: Obtener todas las tareas
+      operationId: getAllTareas
+      responses:
+        '200':
+          description: Lista de tareas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tarea'
+        '500':
+          description: Error de servidor
+    post:
+      tags:
+        - tarea
+      summary: Crear una nueva tarea
+      operationId: createTarea
+      requestBody:
+        description: Objeto de tarea sin id para crear una nueva tarea.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TareaInput'
+      responses:
+        '200':
+          description: Tarea creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+        '400':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '500':
+          description: Error de servidor
+  /tareas/{id}:
+    get:
+      tags:
+        - tarea
+      summary: Obtener una tarea por ID
+      operationId: getTareaById
+      parameters:
+        - name: id
+          in: path
+          description: Identificador de la tarea
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Tarea encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+        '404':
+          description: Tarea no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Error de servidor
+    put:
+      tags:
+        - tarea
+      summary: Actualizar una tarea existente
+      operationId: updateTarea
+      parameters:
+        - name: id
+          in: path
+          description: Identificador de la tarea a actualizar
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Objeto de tarea sin id para actualizar la tarea.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TareaInput'
+      responses:
+        '200':
+          description: Tarea actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+        '400':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '404':
+          description: Error al actualizar la tarea (no encontrada o datos inválidos)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TareaErrorResponse'
+        '500':
+          description: Error de servidor
+    delete:
+      tags:
+        - tarea
+      summary: Eliminar una tarea
+      operationId: deleteTarea
+      parameters:
+        - name: id
+          in: path
+          description: Identificador de la tarea a eliminar
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Tarea eliminada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Tarea eliminada con éxito
+        '404':
+          description: Tarea no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        '500':
+          description: Error de servidor
+components:
+  schemas:
+    Tarea:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: Tarea de ejemplo
+        description:
+          type: string
+          example: Descripción de la tarea
+        estatus:
+          type: string
+          example: Pendiente
+        date:
+          type: string
+          format: date
+          example: "2025-02-21"
+      required:
+        - id
+        - name
+        - description
+        - estatus
+        - date
+    TareaInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: Tarea de ejemplo
+          description: El nombre no puede estar vacío.
+        description:
+          type: string
+          minLength: 1
+          example: Descripción de la tarea
+          description: La descripción no puede estar vacía.
+        estatus:
+          type: string
+          example: Pendiente
+          description: El estado no puede ser nulo.
+        date:
+          type: string
+          format: date
+          example: "2025-02-21"
+          description: La fecha debe ser igual o mayor al día de hoy.
+      required:
+        - name
+        - description
+        - estatus
+        - date
+    ValidationErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            name: "El nombre no puede estar vacío"
+            description: "La descripción no puede estar vacía"
+            estatus: "El estado no puede ser nulo"
+            date: "La fecha debe ser igual o mayor al día de hoy"
+      required:
+        - errors
+    TareaErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Error al actualizar la tarea. Tarea no encontrada o datos inválidos."
+      required:
+        - message
+    NotFoundResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "No existe la tarea con id: 1"
+      required:
+        - message
