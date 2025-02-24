@@ -1,9 +1,6 @@
 package com.tarea.entities;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.NotFound;
-import org.springframework.lang.NonNull;
-
 import java.time.LocalDate;
 
 @Entity
